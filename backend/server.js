@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.route.js';
 
@@ -10,6 +11,7 @@ const app = express ();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json()); // allow parse info
+app.use(cookieParser()); // allow parse cookies
 
 app.use("/api/auth", authRoutes)
 
