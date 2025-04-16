@@ -15,7 +15,7 @@ dotenv.config();
 const app = express ();
 const PORT = process.env.PORT || 5000;
 
-app.use(express.json()); // allow parse info
+app.use(express.json({ limit: "10mb" })); // allow parse info
 app.use(cookieParser()); // allow parse cookies
 
 app.use("/api/auth", authRoutes);
