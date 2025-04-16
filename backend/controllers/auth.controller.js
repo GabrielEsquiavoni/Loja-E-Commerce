@@ -2,6 +2,12 @@ import { redis} from '../lib/redis.js';
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 
+// Validação de e-mail
+const isValidEmail = (email) => {
+	const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+	return emailRegex.test(email);
+};
+
 const generateTokens = (userId) => {
 	const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
 		expiresIn: "15m",
@@ -35,19 +41,22 @@ const setCookies = (res, accessToken, refreshToken) => {
 
 export const signup = async (req, res ) => {
     const { email, password, name } = req.body;
-    try{
-        const userExists = await User.findOne({ email });
-    
-    if (userExists) {
-        return res.status(400).json({ message: "User already exists" });
-    }
-    const user = await User.create({ name,email,password });
-    
-    // autenticar o usuario
-    const {accessToken, refreshToken} = generateTokens(user._id);  
-    await storeRefreshToken(user._id, refreshToken);
 
-    setCookies(res, accessToken, refreshToken);
+    if (!isValidEmail(email)) {
+        return res.status(400).json({ message: "Email inválido" });
+    }
+
+    try {
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+
+        const user = await User.create({ name, email, password });
+
+        const { accessToken, refreshToken } = generateTokens(user._id);  
+        await storeRefreshToken(user._id, refreshToken);
+        setCookies(res, accessToken, refreshToken);
 
         res.status(201).json({
             _id: user._id,
@@ -60,6 +69,7 @@ export const signup = async (req, res ) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 export const login = async (req, res) => {
 	try {
