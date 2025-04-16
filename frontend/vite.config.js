@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server:{
+  build: {
+    chunkSizeWarningLimit: 1000, // Aumenta o limite para 1000 kB (1 MB)
+  },
+  server: {
     proxy: {
       "/api": {
         target: "http://localhost:5000",
